@@ -12,7 +12,7 @@ class PostCreate(PostBase):
 
 class Post(PostBase):
     id: int
-    owner_id: int
+    owner_id: int | None
 
     class Config:
         orm_mode = True
@@ -32,7 +32,7 @@ class UserUpdate(UserBase):
 class User(UserBase):
     id: int
     is_active: bool
-    posts: list[Post] = []
+    # posts: list[Post] = []
 
     class Config:
         orm_mode = True
