@@ -1,8 +1,8 @@
 from fastapi import HTTPException
 from sqlalchemy import select
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from . import models, schemas
-from .database import AsyncSession
 
 
 async def get_user(db: AsyncSession, user_id: int) -> models.User:
@@ -36,22 +36,6 @@ async def create_user(db: AsyncSession, user: schemas.UserCreate):
     await db.commit()
     await db.refresh(db_user)
     return db_user
-
-
-async def get_posts(db: AsyncSession, skip: int = 0, limit: int = 100) -> list[models.Post]:
-    stmt = select(models.Post).offset(skip).limit(limit)
-    result = await db.execute(stmt)
-    posts = result.scalars().all()
-    print(posts)
-    return posts
-
-
-async def create_user_post(db: AsyncSession, post: schemas.PostCreate, user_id: int):
-    db_post = models.Post(**post.model_dump(), owner_id=user_id)
-    db.add(db_post)
-    await db.commit()
-    await db.refresh(db_post)
-    return db_post
 
 
 async def update_user(db: AsyncSession, user_id: int, user: schemas.UserUpdate):
