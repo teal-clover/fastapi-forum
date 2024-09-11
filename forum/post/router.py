@@ -7,7 +7,7 @@ from . import crud, schemas
 router = APIRouter()
 
 
-@router.post("/users/{user_id}/posts/", response_model=schemas.Post)
+@router.post("/users/{user_id}/posts/", response_model=schemas.Post, status_code=201)
 async def create_post_for_user(user_id: int, post: schemas.PostCreate, db: DBSession):
     return await crud.create_user_post(db=db, post=post, user_id=user_id)
 

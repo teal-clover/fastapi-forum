@@ -45,7 +45,6 @@ async def update_user(db: AsyncSession, user_id: int, user: schemas.UserUpdate):
     print(db_user)
     await db.commit()
 
-    # doesn't work without refresh, maybe related https://docs.sqlalchemy.org/en/20/orm/extensions/asyncio.html#asyncio-orm-avoid-lazyloads
     await db.refresh(db_user)
 
     return db_user
