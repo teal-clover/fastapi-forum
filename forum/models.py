@@ -13,14 +13,3 @@ class Base(AsyncAttrs, DeclarativeBase):
              if not k.startswith("_")]
         )
         return f"<{self.__class__.__name__}({columns})>"
-
-
-class Post(Base):
-    __tablename__ = "posts"
-
-    id = Column(Integer, primary_key=True)
-    title = Column(String, index=True)
-    content = Column(String, index=True)
-    owner_id = Column(Integer, ForeignKey("users.id"))
-
-    owner = relationship("User", back_populates="posts")

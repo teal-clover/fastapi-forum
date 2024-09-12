@@ -54,4 +54,4 @@ async def delete_user(db: AsyncSession, user_id: int):
     db_user = await get_user(db, user_id)
     await db.delete(db_user)
     await db.commit()
-    return None
+    return db_user

@@ -7,7 +7,8 @@ from sqlalchemy.ext.asyncio import async_sessionmaker, create_async_engine
 
 from forum.database import get_session
 from forum.main import app
-from forum.models import Base, Post
+from forum.models import Base
+from forum.post.models import Post
 from forum.user.models import User
 
 

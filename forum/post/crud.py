@@ -1,7 +1,7 @@
 from fastapi import HTTPException
 from sqlalchemy import select
 
-from forum import models
+from forum.post import models
 from forum.database import AsyncSession
 
 from . import schemas
