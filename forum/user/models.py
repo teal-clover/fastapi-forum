@@ -1,7 +1,7 @@
 from sqlalchemy import Boolean, Column, ForeignKey, Integer, String
 from sqlalchemy.orm import relationship
 
-from forum.models import Base
+from forum.base.models import Base
 
 
 class User(Base):
@@ -13,4 +13,3 @@ class User(Base):
     is_active = Column(Boolean, default=True)
 
     posts = relationship("Post", back_populates="owner")
-

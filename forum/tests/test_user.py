@@ -66,3 +66,14 @@ async def test_users_delete_one(client: AsyncClient):
         "email": "user1@email.com",
         "is_active": True
     }
+
+
+@pytest.mark.anyio
+async def test_user_token(client: AsyncClient):
+    response = await client.post("/users/token", data={
+        "username": "user1@email.com",
+        "password": "password"
+    })
+
+    assert response.status_code == 200
+    assert "access_token" in response.json()

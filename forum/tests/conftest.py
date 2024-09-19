@@ -5,10 +5,11 @@ from httpx import ASGITransport, AsyncClient
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.ext.asyncio import async_sessionmaker, create_async_engine
 
-from forum.database import get_session
+from forum.base.database import get_session
+from forum.base.models import Base
 from forum.main import app
-from forum.models import Base
 from forum.post.models import Post
+from forum.user.dependencies import get_password_hash
 from forum.user.models import User
 
 
@@ -23,7 +24,6 @@ async def client() -> AsyncGenerator:
 
     async_engine = create_async_engine(
         SQLALCHEMY_DATABASE_URL,
-        # echo=True,
     )
 
     async with async_engine.begin() as conn:
@@ -37,12 +37,12 @@ async def client() -> AsyncGenerator:
         user1 = User(
             id=1,
             email="user1@email.com",
-            hashed_password="password",
+            hashed_password=get_password_hash("password"),
         )
         user2 = User(
             id=2,
             email="user2@email.com",
-            hashed_password="password",
+            hashed_password=get_password_hash("password"),
         )
         session.add_all([user1, user2])
 

@@ -1,9 +1,7 @@
 from sqlalchemy import Column, ForeignKey, Integer, String
-# https://docs.sqlalchemy.org/en/20/orm/extensions/asyncio.html#preventing-implicit-io-when-using-asyncsession
-from sqlalchemy.ext.asyncio import AsyncAttrs
-from sqlalchemy.orm import DeclarativeBase, relationship
+from sqlalchemy.orm import relationship
 
-from forum.models import Base
+from forum.base.models import Base
 
 
 class Post(Base):

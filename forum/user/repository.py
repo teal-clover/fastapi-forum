@@ -1,26 +1,27 @@
-from abc import ABC, abstractmethod
 from typing import Annotated
 
 from fastapi import Depends, HTTPException
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from forum.database import DBSession, get_session
+from forum.base.repository import RepositoryBase
+from forum.base.database import get_session
 from forum.user import schemas
+import forum.user.dependencies as dependencies
 from forum.user.models import User
 
 
-class UserDBRepository():
+class UserDBRepository(RepositoryBase):
     def __init__(self, session: AsyncSession):
         self.session = session
 
-    async def read_all(self, skip: int = 0, limit: int = 100):
+    async def read_all(self, skip: int = 0, limit: int = 100) -> list[User]:
         stmt = select(User).offset(skip).limit(limit)
         result = await self.session.execute(stmt)
         users = result.scalars().all()
         return users
 
-    async def read_one(self, id: int):
+    async def read_one(self, id: int) -> User:
         stmt = select(User).filter(User.id == id)
         result = await self.session.execute(stmt)
         user = result.scalar_one_or_none()
@@ -28,8 +29,8 @@ class UserDBRepository():
             raise HTTPException(status_code=404, detail="User not found")
         return user
 
-    async def create(self, user: schemas.UserCreate):
-        fake_hashed_password = user.password + "notreallyhashed"
+    async def create(self, user: schemas.UserCreate) -> User:
+        fake_hashed_password = dependencies.get_password_hash(user.password)
         db_user = User(
             email=user.email, hashed_password=fake_hashed_password)
         self.session.add(db_user)
@@ -37,7 +38,7 @@ class UserDBRepository():
         await self.session.refresh(db_user)
         return db_user
 
-    async def update(self, user_id: int, user: schemas.UserUpdate):
+    async def update(self, user_id: int, user: schemas.UserUpdate) -> User:
         db_user = await self.read_one(user_id)
         print(db_user)
         db_user.email = user.email
@@ -48,13 +49,13 @@ class UserDBRepository():
 
         return db_user
 
-    async def delete(self, user_id: int):
+    async def delete(self, user_id: int) -> User:
         db_user = await self.read_one(user_id)
         await self.session.delete(db_user)
         await self.session.commit()
         return db_user
 
-    async def read_one_by_email(self, email: str):
+    async def read_one_by_email(self, email: str) -> User | None:
         stmt = select(User).filter(User.email == email)
         result = await self.session.execute(stmt)
         user = result.scalar_one_or_none()

@@ -3,7 +3,7 @@ from httpx import AsyncClient
 
 
 @pytest.mark.anyio
-async def test_users_read_all(client: AsyncClient):
+async def test_posts_read_all(client: AsyncClient):
     response = await client.get("/posts/")
     assert response.status_code == 200
     assert response.json() == [
@@ -23,11 +23,21 @@ async def test_users_read_all(client: AsyncClient):
 
 
 @pytest.mark.anyio
-async def test_users_create_one(client: AsyncClient):
-    response = await client.post("/users/2/posts/", json={
+async def test_posts_create_one(client: AsyncClient):
+    response_token = await client.post("/users/token", data={
+        "username": "user2@email.com",
+        "password": "password"
+    })
+
+    token = response_token.json()["access_token"]
+
+    response = await client.post("/posts/", json={
         "title": "new_title",
         "content": "new_content"
+    }, headers={
+        "Authorization": "Bearer "+token
     })
+
     assert response.status_code == 201
     assert response.json() == {
         "title": "new_title",

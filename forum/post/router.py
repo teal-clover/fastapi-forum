@@ -1,16 +1,18 @@
-from fastapi import APIRouter, HTTPException
+from typing import Annotated
 
-from forum.database import DBSession
+from fastapi import APIRouter, Depends
+
+from forum.post.controllers import PostController
 from forum.post.repository import PostRepository
 
-from . import crud, schemas
+from . import schemas
 
 router = APIRouter()
 
 
-@router.post("/users/{user_id}/posts/", response_model=schemas.Post, status_code=201)
-async def create_post_for_user(repo: PostRepository, user_id: int, post: schemas.PostCreate):
-    return await repo.create(post=post, user_id=user_id)
+@router.post("/posts/", response_model=schemas.Post, status_code=201)
+async def create_post_for_user(controller: Annotated[PostController, Depends()], post: schemas.PostCreate):
+    return await controller.create(post=post)
 
 
 @router.get("/posts/", response_model=list[schemas.Post])
