@@ -1,6 +1,7 @@
 from datetime import datetime, timedelta, timezone
-from typing import Annotated
 from os import getenv
+from typing import Annotated
+
 import jwt
 from dotenv import load_dotenv
 from fastapi import Depends, HTTPException, status
@@ -22,24 +23,24 @@ pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/users/token")
 
 
-def verify_password(plain_password, hashed_password):
+def verify_password(plain_password, hashed_password) -> bool:
     return pwd_context.verify(plain_password, hashed_password)
 
 
-def get_password_hash(password: str):
+def get_password_hash(password: str) -> str:
     return pwd_context.hash(password)
 
 
-async def authenticate_user(repo: UserDBRepository, email: str, password: str):
+async def authenticate_user(repo: UserDBRepository, email: str, password: str) -> models.User | None:
     user = await repo.read_one_by_email(email=email)
     if not user:
-        return False
+        return None
     if not verify_password(password, user.hashed_password):
-        return False
+        return None
     return user
 
 
-def create_access_token(data: dict, expires_delta: timedelta | None = None):
+def create_access_token(data: dict, expires_delta: timedelta | None = None) -> str:
     to_encode = data.copy()
     if expires_delta:
         expire = datetime.now(timezone.utc) + expires_delta

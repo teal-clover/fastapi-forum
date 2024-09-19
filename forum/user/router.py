@@ -16,34 +16,34 @@ router = APIRouter(prefix="/users")
 
 
 @router.post(path="/", status_code=201, response_model=schemas.User)
-async def create_user(controller: Annotated[UserController, Depends()], user: schemas.UserCreate) -> schemas.User:
+async def create_user(controller: Annotated[UserController, Depends()], user: schemas.UserCreate) -> models.User:
     return await controller.create(user)
 
 
 @router.get("/me", response_model=schemas.User)
 async def read_users_me(
     current_user: Annotated[models.User, Depends(get_current_active_user)],
-) -> schemas.User:
+) -> models.User:
     return current_user
 
 
 @router.get(path="/", response_model=list[schemas.User])
-async def read_users(controller: Annotated[UserController, Depends()], skip: int = 0, limit: int = 100) -> list[schemas.User]:
+async def read_users(controller: Annotated[UserController, Depends()], skip: int = 0, limit: int = 100) -> list[models.User]:
     return await controller.read_all(skip=skip, limit=limit)
 
 
 @router.get("/{user_id}", response_model=schemas.User, status_code=200)
-async def read_user(controller: Annotated[UserController, Depends()], user_id: int) -> schemas.User:
+async def read_user(controller: Annotated[UserController, Depends()], user_id: int) -> models.User:
     return await controller.read_one(user_id=user_id)
 
 
 @router.put("/{user_id}", response_model=schemas.User)
-async def update_user(controller: Annotated[UserController, Depends()], user_id: int, user: schemas.UserUpdate) -> schemas.User:
+async def update_user(controller: Annotated[UserController, Depends()], user_id: int, user: schemas.UserUpdate) -> models.User:
     return await controller.update(user=user, user_id=user_id)
 
 
 @router.delete("/{user_id}", response_model=schemas.User)
-async def delete_user(controller: Annotated[UserController, Depends()], user_id: int) -> schemas.User:
+async def delete_user(controller: Annotated[UserController, Depends()], user_id: int) -> models.User:
     return await controller.delete(user_id=user_id)
 
 

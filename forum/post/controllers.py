@@ -3,9 +3,9 @@ from typing import Annotated
 from fastapi import Depends, HTTPException
 
 from forum.post import models, schemas
-from forum.user.models import User
 from forum.post.repository import PostRepository
 from forum.user.dependencies import get_current_active_user
+from forum.user.models import User
 
 
 class PostController:
