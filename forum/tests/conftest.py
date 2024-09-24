@@ -30,7 +30,11 @@ async def client() -> AsyncGenerator:
         await conn.run_sync(Base.metadata.create_all)
 
     AsyncSessionLocal = async_sessionmaker(
-        autocommit=False, autoflush=False, bind=async_engine, future=True,)
+        autocommit=False,
+        autoflush=False,
+        bind=async_engine,
+        future=True,
+    )
 
     session = AsyncSessionLocal()
     async with session.begin():
@@ -47,18 +51,8 @@ async def client() -> AsyncGenerator:
         session.add_all([user1, user2])
 
     async with session.begin():
-        post1 = Post(
-            id=1,
-            title="title1",
-            content="content1",
-            owner_id=1
-        )
-        post2 = Post(
-            id=2,
-            title="title2",
-            content="content2",
-            owner_id=1
-        )
+        post1 = Post(id=1, title="title1", content="content1", owner_id=1)
+        post2 = Post(id=2, title="title2", content="content2", owner_id=1)
         session.add_all([post1, post2])
 
     async def test_get_session() -> AsyncIterator[async_sessionmaker]:
@@ -73,7 +67,9 @@ async def client() -> AsyncGenerator:
 
     app.dependency_overrides[get_session] = test_get_session
 
-    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://localhost:8000") as client:
+    async with AsyncClient(
+        transport=ASGITransport(app=app), base_url="http://localhost:8000"
+    ) as client:
         yield client
 
     async with async_engine.begin() as conn:

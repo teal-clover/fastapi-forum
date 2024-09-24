@@ -1,6 +1,6 @@
 from typing import Annotated
 
-from fastapi import Depends, HTTPException
+from fastapi import Depends
 
 from forum.post import models, schemas
 from forum.post.repository import PostRepository
@@ -9,7 +9,11 @@ from forum.user.models import User
 
 
 class PostController:
-    def __init__(self, repo: PostRepository, current_user: Annotated[User, Depends(get_current_active_user)]):
+    def __init__(
+        self,
+        repo: PostRepository,
+        current_user: Annotated[User, Depends(get_current_active_user)],
+    ):
         self.repo = repo
         self.user = current_user
 

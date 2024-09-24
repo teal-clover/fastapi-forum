@@ -4,12 +4,11 @@ from fastapi import Depends
 from sqlalchemy import select
 
 from forum.base.database import AsyncSession, get_session
-from forum.base.repository import RepositoryBase
 from forum.post import schemas
 from forum.post.models import Post
 
 
-class PostDBRepository():
+class PostDBRepository:
     def __init__(self, session: AsyncSession):
         self.session = session
 

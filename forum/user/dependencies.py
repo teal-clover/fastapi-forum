@@ -4,11 +4,12 @@ from typing import Annotated
 
 import jwt
 from dotenv import load_dotenv
-from fastapi import Depends, HTTPException, status
+from fastapi import Depends
 from fastapi.security import OAuth2PasswordBearer
 from jwt.exceptions import InvalidTokenError
 from passlib.context import CryptContext
 
+from forum.base.exceptions import CredentialsException, InactiveUserException
 from forum.user import models, schemas
 from forum.user.repository import UserDBRepository, UserRepository
 
@@ -31,7 +32,9 @@ def get_password_hash(password: str) -> str:
     return pwd_context.hash(password)
 
 
-async def authenticate_user(repo: UserDBRepository, email: str, password: str) -> models.User | None:
+async def authenticate_user(
+    repo: UserDBRepository, email: str, password: str
+) -> models.User | None:
     user = await repo.read_one_by_email(email=email)
     if not user:
         return None
@@ -51,29 +54,32 @@ def create_access_token(data: dict, expires_delta: timedelta | None = None) -> s
     return encoded_jwt
 
 
-async def get_current_user(token: Annotated[str, Depends(oauth2_scheme)], repo: UserRepository) -> models.User:
-    credentials_exception = HTTPException(
-        status_code=status.HTTP_401_UNAUTHORIZED,
-        detail="Could not validate credentials",
-        headers={"WWW-Authenticate": "Bearer"},
-    )
+async def get_current_user(
+    token: Annotated[str, Depends(oauth2_scheme)], repo: UserRepository
+) -> models.User:
+    # credentials_exception = HTTPException(
+    #     status_code=status.HTTP_401_UNAUTHORIZED,
+    #     detail="Could not validate credentials",
+    #     headers={"WWW-Authenticate": "Bearer"},
+    # )
     try:
         payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
         username: str = payload.get("sub")
         if username is None:
-            raise credentials_exception
+            raise CredentialsException()
         token_data = schemas.TokenData(username=username)
     except InvalidTokenError:
-        raise credentials_exception
+        raise CredentialsException()
     user = await repo.read_one_by_email(email=token_data.username)
     if user is None:
-        raise credentials_exception
+        raise CredentialsException()
     return user
 
 
 async def get_current_active_user(
     current_user: Annotated[models.User, Depends(get_current_user)],
 ) -> models.User:
-    if current_user.is_active == False:
-        raise HTTPException(status_code=400, detail="Inactive user")
+    if not current_user.is_active:
+        # raise HTTPException(status_code=400, detail="Inactive user")
+        raise InactiveUserException()
     return current_user

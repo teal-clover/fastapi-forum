@@ -1,13 +1,13 @@
 from typing import Annotated
 
-from fastapi import Depends, HTTPException
+from fastapi import Depends
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from forum.base.repository import RepositoryBase
-from forum.base.database import get_session
-from forum.user import schemas
 import forum.user.dependencies as dependencies
+from forum.base.database import get_session
+from forum.base.repository import RepositoryBase
+from forum.user import schemas
 from forum.user.models import User
 
 
@@ -21,18 +21,15 @@ class UserDBRepository(RepositoryBase):
         users = result.scalars().all()
         return users
 
-    async def read_one(self, id: int) -> User:
+    async def read_one(self, id: int) -> User | None:
         stmt = select(User).filter(User.id == id)
         result = await self.session.execute(stmt)
         user = result.scalar_one_or_none()
-        if not user:
-            raise HTTPException(status_code=404, detail="User not found")
         return user
 
     async def create(self, user: schemas.UserCreate) -> User:
         fake_hashed_password = dependencies.get_password_hash(user.password)
-        db_user = User(
-            email=user.email, hashed_password=fake_hashed_password)
+        db_user = User(email=user.email, hashed_password=fake_hashed_password)
         self.session.add(db_user)
         await self.session.commit()
         await self.session.refresh(db_user)
@@ -40,9 +37,7 @@ class UserDBRepository(RepositoryBase):
 
     async def update(self, user_id: int, user: schemas.UserUpdate) -> User:
         db_user = await self.read_one(user_id)
-        print(db_user)
         db_user.email = user.email
-        print(db_user)
         await self.session.commit()
 
         await self.session.refresh(db_user)
