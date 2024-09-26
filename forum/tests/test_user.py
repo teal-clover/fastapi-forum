@@ -42,7 +42,7 @@ async def test_users_update_one(client: AsyncClient):
 
 @pytest.mark.anyio
 async def test_users_delete_one(client: AsyncClient):
-    response = await client.get("/users/1")
+    response = await client.delete("/users/1")
     assert response.status_code == 200
     assert response.json() == {"id": 1, "email": "user1@email.com", "is_active": True}
 

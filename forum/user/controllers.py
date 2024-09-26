@@ -4,12 +4,17 @@ from typing import Annotated
 from fastapi import Depends
 from fastapi.security import OAuth2PasswordRequestForm
 
-from forum.base.exceptions import (EmailTakenException,
-                                   IncorectLoginInfoException,
-                                   UserNotFoundException)
+from forum.base.exceptions import (
+    EmailTakenException,
+    IncorectLoginInfoException,
+    UserNotFoundException,
+)
 from forum.user import models, schemas
-from forum.user.dependencies import (ACCESS_TOKEN_EXPIRE_MINUTES,
-                                     authenticate_user, create_access_token)
+from forum.user.dependencies import (
+    ACCESS_TOKEN_EXPIRE_MINUTES,
+    authenticate_user,
+    create_access_token,
+)
 from forum.user.repository import UserRepository
 
 
@@ -38,10 +43,10 @@ class UserController:
         return user
 
     async def update(self, user_id: int, user: schemas.UserUpdate) -> models.User:
-        return await self.repo.update(user=user, user_id=user_id)
+        return await self.repo.update(item=user, item_id=user_id)
 
     async def delete(self, user_id: int) -> models.User:
-        return await self.repo.delete(user_id=user_id)
+        return await self.repo.delete(item_id=user_id)
 
 
 class AuthController:

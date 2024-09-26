@@ -3,7 +3,12 @@ from typing import AsyncGenerator, AsyncIterator
 import pytest
 from httpx import ASGITransport, AsyncClient
 from sqlalchemy.exc import SQLAlchemyError
-from sqlalchemy.ext.asyncio import async_sessionmaker, create_async_engine
+from sqlalchemy.ext.asyncio import (
+    AsyncEngine,
+    AsyncSession,
+    async_sessionmaker,
+    create_async_engine,
+)
 
 from forum.base.database import get_session
 from forum.base.models import Base
@@ -18,25 +23,8 @@ def anyio_backend() -> str:
     return "asyncio"
 
 
-@pytest.fixture
-async def client() -> AsyncGenerator:
-    SQLALCHEMY_DATABASE_URL = "sqlite+aiosqlite://"
-
-    async_engine = create_async_engine(
-        SQLALCHEMY_DATABASE_URL,
-    )
-
-    async with async_engine.begin() as conn:
-        await conn.run_sync(Base.metadata.create_all)
-
-    AsyncSessionLocal = async_sessionmaker(
-        autocommit=False,
-        autoflush=False,
-        bind=async_engine,
-        future=True,
-    )
-
-    session = AsyncSessionLocal()
+async def populate_db(local_session: async_sessionmaker[AsyncSession]):
+    session = local_session()
     async with session.begin():
         user1 = User(
             id=1,
@@ -55,8 +43,10 @@ async def client() -> AsyncGenerator:
         post2 = Post(id=2, title="title2", content="content2", owner_id=1)
         session.add_all([post1, post2])
 
+
+async def overrwrite_dependency(local_session: async_sessionmaker[AsyncSession]):
     async def test_get_session() -> AsyncIterator[async_sessionmaker]:
-        session = AsyncSessionLocal()
+        session = local_session()
         try:
             yield session
         except SQLAlchemyError as e:
@@ -67,10 +57,39 @@ async def client() -> AsyncGenerator:
 
     app.dependency_overrides[get_session] = test_get_session
 
+
+async def create_db(async_engine: AsyncEngine):
+    async with async_engine.begin() as conn:
+        await conn.run_sync(Base.metadata.create_all)
+
+
+async def clear_db(async_engine: AsyncEngine):
+    async with async_engine.begin() as conn:
+        await conn.run_sync(Base.metadata.drop_all)
+
+
+@pytest.fixture
+async def client() -> AsyncGenerator:
+    SQLALCHEMY_DATABASE_URL = "sqlite+aiosqlite://"
+
+    async_engine = create_async_engine(
+        SQLALCHEMY_DATABASE_URL,
+    )
+
+    await create_db(async_engine)
+
+    AsyncSessionLocal = async_sessionmaker(
+        autocommit=False,
+        autoflush=False,
+        bind=async_engine,
+        future=True,
+    )
+    await populate_db(AsyncSessionLocal)
+    await overrwrite_dependency(AsyncSessionLocal)
+
     async with AsyncClient(
         transport=ASGITransport(app=app), base_url="http://localhost:8000"
     ) as client:
         yield client
 
-    async with async_engine.begin() as conn:
-        await conn.run_sync(Base.metadata.drop_all)
+    await clear_db(async_engine)

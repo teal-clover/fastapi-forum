@@ -18,7 +18,7 @@ class PostController:
         self.user = current_user
 
     async def create(self, post: schemas.PostCreate) -> models.Post:
-        return await self.repo.create(post=post, user_id=self.user.id)
+        return await self.repo.create(item=post, owner_id=int(self.user.id))
 
     async def read_all(self, skip: int = 0, limit: int = 100) -> list[models.Post]:
         posts = await self.repo.read_all(skip=skip, limit=limit)

@@ -15,7 +15,7 @@ class RepositoryBase(ABC):
         pass
 
     @abstractmethod
-    async def read_one(self, id: int) -> Model:
+    async def read_one(self, item_id: int) -> Model:
         pass
 
     @abstractmethod
@@ -27,5 +27,5 @@ class RepositoryBase(ABC):
         pass
 
     @abstractmethod
-    async def delete() -> Model:
+    async def delete(self, item_id: int) -> Model:
         pass

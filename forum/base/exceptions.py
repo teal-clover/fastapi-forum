@@ -1,21 +1,26 @@
-from fastapi import HTTPException
-
-
-class EmailTakenException(HTTPException):
+class EmailTakenException(Exception):
     pass
 
 
-class CredentialsException(HTTPException):
+class CredentialsException(Exception):
     pass
 
 
-class InactiveUserException(HTTPException):
+class InactiveUserException(Exception):
     pass
 
 
-class UserNotFoundException(HTTPException):
+class UserNotFoundException(Exception):
     pass
 
 
-class IncorectLoginInfoException(HTTPException):
+class PostNotFoundException(Exception):
+    pass
+
+
+class IncorectLoginInfoException(Exception):
+    pass
+
+
+class InternalServerException(Exception):
     pass

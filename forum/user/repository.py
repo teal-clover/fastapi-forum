@@ -16,44 +16,44 @@ class UserDBRepository(RepositoryBase):
         self.session = session
 
     async def read_all(self, skip: int = 0, limit: int = 100) -> list[User]:
-        stmt = select(User).offset(skip).limit(limit)
-        result = await self.session.execute(stmt)
-        users = result.scalars().all()
+        statement = select(User).offset(skip).limit(limit)
+        response = await self.session.execute(statement)
+        users = response.scalars().all()
         return users
 
-    async def read_one(self, id: int) -> User | None:
-        stmt = select(User).filter(User.id == id)
-        result = await self.session.execute(stmt)
-        user = result.scalar_one_or_none()
+    async def read_one(self, item_id: int) -> User | None:
+        statement = select(User).filter(User.id == item_id)
+        response = await self.session.execute(statement)
+        user = response.scalar_one_or_none()
         return user
 
-    async def create(self, user: schemas.UserCreate) -> User:
-        fake_hashed_password = dependencies.get_password_hash(user.password)
-        db_user = User(email=user.email, hashed_password=fake_hashed_password)
-        self.session.add(db_user)
+    async def create(self, item: schemas.UserCreate) -> User:
+        fake_hashed_password = dependencies.get_password_hash(item.password)
+        user = User(email=item.email, hashed_password=fake_hashed_password)
+        self.session.add(user)
         await self.session.commit()
-        await self.session.refresh(db_user)
-        return db_user
+        await self.session.refresh(user)
+        return user
 
-    async def update(self, user_id: int, user: schemas.UserUpdate) -> User:
-        db_user = await self.read_one(user_id)
-        db_user.email = user.email
+    async def update(self, item_id: int, item: schemas.UserUpdate) -> User:
+        user = await self.read_one(item_id)
+        user.email = item.email
         await self.session.commit()
 
-        await self.session.refresh(db_user)
+        await self.session.refresh(user)
 
-        return db_user
+        return user
 
-    async def delete(self, user_id: int) -> User:
-        db_user = await self.read_one(user_id)
-        await self.session.delete(db_user)
+    async def delete(self, item_id: int) -> User:
+        user = await self.read_one(item_id)
+        await self.session.delete(user)
         await self.session.commit()
-        return db_user
+        return user
 
     async def read_one_by_email(self, email: str) -> User | None:
-        stmt = select(User).filter(User.email == email)
-        result = await self.session.execute(stmt)
-        user = result.scalar_one_or_none()
+        statement = select(User).filter(User.email == email)
+        response = await self.session.execute(statement)
+        user = response.scalar_one_or_none()
         return user
 
 
