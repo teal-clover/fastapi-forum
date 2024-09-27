@@ -12,6 +12,7 @@ from sqlalchemy.ext.asyncio import (
 
 from forum.base.database import get_session
 from forum.base.models import Base
+from forum.comment.models import Comment
 from forum.main import app
 from forum.post.models import Post
 from forum.user.dependencies import get_password_hash
@@ -43,14 +44,18 @@ async def populate_db(local_session: async_sessionmaker[AsyncSession]):
         post2 = Post(id=2, title="title2", content="content2", owner_id=1)
         session.add_all([post1, post2])
 
+    async with session.begin():
+        comment1 = Comment(id=1, content="content1", owner_id=1)
+        comment2 = Comment(id=2, content="content2", owner_id=1)
+        session.add_all([comment1, comment2])
+
 
 async def overrwrite_dependency(local_session: async_sessionmaker[AsyncSession]):
     async def test_get_session() -> AsyncIterator[async_sessionmaker]:
         session = local_session()
         try:
             yield session
-        except SQLAlchemyError as e:
-            print(e)
+        except SQLAlchemyError:
             await session.rollback()
         finally:
             await session.close()

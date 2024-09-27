@@ -18,6 +18,10 @@ class PostNotFoundException(Exception):
     pass
 
 
+class CommentNotFoundException(Exception):
+    pass
+
+
 class IncorectLoginInfoException(Exception):
     pass
 

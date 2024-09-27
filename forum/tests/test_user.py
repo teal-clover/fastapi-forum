@@ -5,7 +5,6 @@ from httpx import AsyncClient
 @pytest.mark.anyio
 async def test_users_read_all(client: AsyncClient):
     response = await client.get("/users/")
-    print(response.json())
     assert response.status_code == 200
     assert response.json() == [
         {"email": "user1@email.com", "id": 1, "is_active": True},
@@ -42,9 +41,9 @@ async def test_users_update_one(client: AsyncClient):
 
 @pytest.mark.anyio
 async def test_users_delete_one(client: AsyncClient):
-    response = await client.delete("/users/1")
+    response = await client.delete("/users/2")
     assert response.status_code == 200
-    assert response.json() == {"id": 1, "email": "user1@email.com", "is_active": True}
+    assert response.json() == {"id": 2, "email": "user2@email.com", "is_active": True}
 
 
 @pytest.mark.anyio
