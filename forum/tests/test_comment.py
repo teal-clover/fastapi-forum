@@ -1,34 +1,83 @@
 import pytest
+from fastapi import status
 from httpx import AsyncClient
 
 
 @pytest.mark.anyio
-async def test_comments_read_all(client: AsyncClient):
-    response = await client.get("/comments/")
-    print(response)
-    assert response.status_code == 200
-    assert response.json() == [
-        {"content": "content1", "id": 1, "owner_id": 1},
-        {"content": "content2", "id": 2, "owner_id": 1},
-    ]
-
-
-@pytest.mark.anyio
-async def test_comments_create_one(client: AsyncClient):
-    response_token = await client.post(
-        "/users/token", data={"username": "user2@email.com", "password": "password"}
-    )
-
-    token = response_token.json()["access_token"]
-
+async def test_create_one_comment(client: AsyncClient, token: str):
+    # given
+    post_id = 1
+    # when
     response = await client.post(
-        "/comments/",
+        f"/comments/{post_id}",
         json={"content": "new_content"},
         headers={"Authorization": "Bearer " + token},
     )
+    # then
     assert response.status_code == 201
     assert response.json() == {
         "content": "new_content",
         "id": 3,
-        "owner_id": 2,
+        "user_id": 2,
     }
+
+
+@pytest.mark.anyio
+async def test_like_a_comment(client: AsyncClient, token: str):
+    # given
+    comment_id = 1
+    # when
+    like_response = await client.post(
+        f"/comments/likes/{comment_id}",
+        headers={"Authorization": "Bearer " + token},
+    )
+    list_likes_response = await client.get(
+        f"/comments/likes/{comment_id}", headers={"Authorization": "Bearer " + token}
+    )
+    # then
+    assert like_response.status_code == 200
+    assert list_likes_response.status_code == 200
+    assert list_likes_response.json() == [
+        {"email": "user2@email.com", "id": 2, "is_active": True}
+    ]
+
+
+@pytest.mark.anyio
+async def test_edit_comment(client: AsyncClient, token: str):
+    # given
+    comment_id = 1
+    # when
+    response = await client.put(
+        f"/comments/{comment_id}",
+        json={"content": "new_content"},
+        headers={"Authorization": "Bearer " + token},
+    )
+    # then
+    assert response.status_code == status.HTTP_204_NO_CONTENT
+
+
+@pytest.mark.anyio
+async def test_delete_comment(client: AsyncClient, token: str):
+    # given
+    comment_id = 1
+    # when
+    response = await client.put(
+        f"/comments/{comment_id}",
+        json={"content": "new_content"},
+        headers={"Authorization": "Bearer " + token},
+    )
+    # then
+    assert response.status_code == status.HTTP_204_NO_CONTENT
+
+
+@pytest.mark.anyio
+async def test_get_comment_by_post(client: AsyncClient, token: str):
+    # given
+    post_id = 1
+    # when
+    response = await client.get(
+        f"/comments/post/{post_id}",
+        headers={"Authorization": "Bearer " + token},
+    )
+    # then
+    assert response.status_code == status.HTTP_200_OK

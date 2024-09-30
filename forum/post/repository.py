@@ -20,8 +20,8 @@ class PostDBRepository(RepositoryBase):
         users = response.scalars().all()
         return users
 
-    async def create(self, item: schemas.PostCreate, owner_id: int) -> Post:
-        post = Post(**item.model_dump(), owner_id=owner_id)
+    async def create(self, item: schemas.PostCreate, user_id: int) -> Post:
+        post = Post(**item.model_dump(), user_id=user_id)
         self.session.add(post)
         await self.session.commit()
         await self.session.refresh(post)

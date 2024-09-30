@@ -16,6 +16,6 @@ class PostUpdate(PostBase):
 
 class Post(PostBase):
     id: int
-    owner_id: int | None
+    user_id: int | None
 
     model_config = ConfigDict(from_attributes=True)

@@ -4,7 +4,8 @@ from fastapi import APIRouter, Depends
 
 from forum.post import models
 from forum.post.controllers import PostController
-from forum.post.repository import PostRepository
+from forum.user.dependencies import get_current_active_user
+from forum.user.models import User
 
 from . import schemas
 
@@ -13,14 +14,21 @@ router = APIRouter()
 
 @router.post("/posts/", response_model=schemas.Post, status_code=201)
 async def create_post_for_user(
-    controller: Annotated[PostController, Depends()], post: schemas.PostCreate
+    current_user: Annotated[User, Depends(get_current_active_user)],
+    controller: Annotated[PostController, Depends()],
+    post: schemas.PostCreate,
 ) -> models.Post:
-    return await controller.create(post=post)
+    return await controller.create(post=post, user=current_user)
 
 
 @router.get("/posts/", response_model=list[schemas.Post])
 async def read_posts(
-    repo: PostRepository, skip: int = 0, limit: int = 100
+    controller: Annotated[PostController, Depends()],
+    skip: int = 0,
+    limit: int = 100,
 ) -> list[models.Post]:
-    posts = await repo.read_all(skip=skip, limit=limit)
+    posts = await controller.read_all(
+        skip=skip,
+        limit=limit,
+    )
     return posts
