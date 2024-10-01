@@ -26,14 +26,16 @@ class PostDBRepository(RepositoryBase):
         await self.session.refresh(post)
         return post
 
-    async def read_one(self, item_id: int) -> Post:
+    async def read_one(self, item_id: int) -> Post | None:
         statement = select(Post).filter(Post.id == item_id)
         response = await self.session.execute(statement)
         post = response.scalar_one_or_none()
         return post
 
-    async def update(self, item_id, item: schemas.PostUpdate) -> Post:
+    async def update(self, item_id: int, item: schemas.PostUpdate) -> Post | None:
         post = await self.read_one(item_id)
+        if not post:
+            return None
         post.title = item.title
         post.content = item.content
 
@@ -41,8 +43,10 @@ class PostDBRepository(RepositoryBase):
         await self.session.refresh(post)
         return post
 
-    async def delete(self, item_id: int) -> Post:
+    async def delete(self, item_id: int) -> Post | None:
         post = await self.read_one(item_id)
+        if not post:
+            return None
         await self.session.delete(post)
         await self.session.commit()
         return post

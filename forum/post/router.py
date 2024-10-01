@@ -23,7 +23,7 @@ async def create_post_for_user(
     try:
         return await controller.create(post=post, user=current_user)
     except PostNotFoundException:
-        raise PostNotFoundHTTPException()
+        raise PostNotFoundHTTPException
 
 
 @router.get("/posts/", response_model=list[schemas.Post])
@@ -37,3 +37,37 @@ async def read_posts(
         limit=limit,
     )
     return posts
+
+
+@router.get("/posts/{post_id}", response_model=schemas.Post)
+async def read_one_post(
+    controller: Annotated[PostController, Depends()],
+    post_id: int,
+) -> models.Post:
+    try:
+        return await controller.read_one(post_id)
+    except PostNotFoundException:
+        raise PostNotFoundHTTPException
+
+
+@router.put("/posts/{post_id}", response_model=schemas.Post)
+async def edit_post(
+    controller: Annotated[PostController, Depends()],
+    post_id: int,
+    post: schemas.PostUpdate,
+) -> models.Post:
+    try:
+        return await controller.update(post_id, post)
+    except PostNotFoundException:
+        raise PostNotFoundHTTPException
+
+
+@router.delete("/posts/{post_id}", response_model=schemas.Post, status_code=200)
+async def delete_post(
+    controller: Annotated[PostController, Depends()],
+    post_id: int,
+) -> models.Post:
+    try:
+        return await controller.delete(post_id)
+    except PostNotFoundException:
+        raise PostNotFoundHTTPException
