@@ -20,7 +20,7 @@ async def create_user(
     try:
         return await controller.create(user)
     except EmailTakenException:
-        raise EmailTakenHTTPException()
+        raise EmailTakenHTTPException
 
 
 @router.get("/me", response_model=schemas.User)
@@ -43,7 +43,7 @@ async def read_user(
 ) -> models.User:
     user = await controller.read_one(user_id=user_id)
     if not user:
-        raise UserNotFoundHTTPException()
+        raise UserNotFoundHTTPException
     return user
 
 
@@ -70,4 +70,4 @@ async def login_for_access_token(
     try:
         return await controller.authenticate()
     except IncorectLoginInfoException:
-        raise IncorectLoginInfoHTTPException()
+        raise IncorectLoginInfoHTTPException

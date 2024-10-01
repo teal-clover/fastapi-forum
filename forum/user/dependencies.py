@@ -61,13 +61,13 @@ async def get_current_user(
         payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
         username: str = payload.get("sub")
         if username is None:
-            raise CredentialsException()
+            raise CredentialsException
         token_data = schemas.TokenData(username=username)
     except InvalidTokenError:
-        raise CredentialsException()
+        raise CredentialsException
     user = await repo.read_one_by_email(email=token_data.username)
     if user is None:
-        raise CredentialsException()
+        raise CredentialsException
     return user
 
 
@@ -75,5 +75,5 @@ async def get_current_active_user(
     current_user: Annotated[models.User, Depends(get_current_user)],
 ) -> models.User:
     if not current_user.is_active:
-        raise InactiveUserException()
+        raise InactiveUserException
     return current_user

@@ -28,7 +28,7 @@ class UserController:
     async def create(self, new_user: schemas.UserCreate) -> models.User:
         user = await self.repo.read_one_by_email(email=new_user.email)
         if user:
-            raise EmailTakenException()
+            raise EmailTakenException
         return await self.repo.create(new_user)
 
     async def read_all(self, skip: int = 0, limit: int = 100) -> list[models.User]:
@@ -38,7 +38,7 @@ class UserController:
     async def read_one(self, user_id: int) -> models.User:
         user = await self.repo.read_one(user_id)
         if not user:
-            raise UserNotFoundException()
+            raise UserNotFoundException
 
         return user
 
@@ -67,7 +67,7 @@ class AuthController:
             password=self.form_data.password,
         )
         if not user:
-            raise IncorectLoginInfoException()
+            raise IncorectLoginInfoException
         access_token_expires = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
         access_token = create_access_token(
             data={"sub": user.email}, expires_delta=access_token_expires

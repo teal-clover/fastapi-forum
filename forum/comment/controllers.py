@@ -23,7 +23,7 @@ class CommentController:
     async def read_one(self, comment_id: int) -> models.Comment:
         comment = await self.repo.read_one(comment_id)
         if not comment:
-            raise CommentNotFoundException()
+            raise CommentNotFoundException
         return comment
 
     async def update(
@@ -36,18 +36,18 @@ class CommentController:
         if comment.user_id == user.id:
             await self.repo.delete(item_id=comment_id)
         else:
-            raise CredentialsException()
+            raise CredentialsException
 
     async def like_comment(self, comment_id: int, user: User) -> None:
         comment = await self.repo.toggle_like(comment_id=comment_id, user=user)
         if not comment:
-            raise CommentNotFoundException()
+            raise CommentNotFoundException
         return comment
 
     async def list_likes(self, comment_id: int) -> list[User]:
         users = await self.repo.read_likes(comment_id)
         if users is None:
-            raise CommentNotFoundException()
+            raise CommentNotFoundException
         return users
 
     async def read_comments_by_user(self, user: User) -> list[models.Comment]:
