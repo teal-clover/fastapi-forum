@@ -1,6 +1,18 @@
+import jwt
 import pytest
 from fastapi import status
 from httpx import AsyncClient
+from jwt import InvalidTokenError
+
+from forum.user.dependencies import ALGORITHM, SECRET_KEY
+
+
+def verify_jwt(token) -> bool:
+    try:
+        jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+        return True
+    except InvalidTokenError:
+        return False
 
 
 @pytest.mark.anyio
@@ -44,7 +56,11 @@ async def test_users_update_one(client: AsyncClient):
 async def test_users_delete_one(client: AsyncClient):
     response = await client.delete("/users/2")
     assert response.status_code == status.HTTP_200_OK
-    assert response.json() == {"id": 2, "email": "new_email@mail.com", "is_active": True}
+    assert response.json() == {
+        "id": 2,
+        "email": "new_email@mail.com",
+        "is_active": True,
+    }
 
 
 @pytest.mark.anyio
@@ -55,3 +71,4 @@ async def test_user_token(client: AsyncClient):
 
     assert response.status_code == status.HTTP_200_OK
     assert "access_token" in response.json()
+    assert verify_jwt(response.json()["access_token"])

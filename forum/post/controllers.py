@@ -1,4 +1,3 @@
-from forum.base.exceptions import PostNotFoundException
 from forum.post import models, schemas
 from forum.post.repository import PostRepository
 from forum.user.models import User

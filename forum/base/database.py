@@ -8,7 +8,6 @@ from sqlalchemy.ext.asyncio import (AsyncSession, async_sessionmaker,
 from forum.base.models import Base
 
 SQLALCHEMY_DATABASE_URL = "sqlite+aiosqlite:///./sql_app.db"
-# SQLALCHEMY_DATABASE_URL = "postgresql://user:password@postgresserver/db"
 
 async_engine = create_async_engine(SQLALCHEMY_DATABASE_URL)
 
