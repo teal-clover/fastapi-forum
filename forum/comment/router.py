@@ -1,8 +1,9 @@
 from typing import Annotated
 
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends
 
 from forum.base.exceptions import CredentialsException
+from forum.base.http_exceptions import CredentialsHTTPException
 from forum.comment import models
 from forum.comment.controllers import CommentController
 from forum.user.dependencies import get_current_active_user
@@ -80,4 +81,4 @@ async def delete_comment(
     try:
         await controller.delete(comment_id=comment_id, user=current_user)
     except CredentialsException:
-        raise HTTPException(detail="You don't have access!", status_code=401)
+        raise CredentialsHTTPException

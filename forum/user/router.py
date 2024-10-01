@@ -1,8 +1,11 @@
 from typing import Annotated
 
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, status
 
-from forum.base.exceptions import EmailTakenException, IncorectLoginInfoException
+from forum.base.exceptions import (EmailTakenException,
+                                   IncorectLoginInfoException)
+from forum.base.http_exceptions import (EmailTakenHTTPException,
+                                        IncorectLoginInfoHTTPException, UserNotFoundHTTPException)
 from forum.user import models, schemas
 from forum.user.controllers import AuthController, UserController
 from forum.user.dependencies import get_current_active_user
@@ -10,14 +13,14 @@ from forum.user.dependencies import get_current_active_user
 router = APIRouter(prefix="/users")
 
 
-@router.post(path="/", status_code=201, response_model=schemas.User)
+@router.post(path="/", status_code=status.HTTP_201_CREATED, response_model=schemas.User)
 async def create_user(
     controller: Annotated[UserController, Depends()], user: schemas.UserCreate
 ) -> models.User:
     try:
         return await controller.create(user)
     except EmailTakenException:
-        raise HTTPException(status_code=400, detail="Email already registered")
+        raise EmailTakenHTTPException()
 
 
 @router.get("/me", response_model=schemas.User)
@@ -34,11 +37,14 @@ async def read_users(
     return await controller.read_all(skip=skip, limit=limit)
 
 
-@router.get("/{user_id}", response_model=schemas.User, status_code=200)
+@router.get("/{user_id}", response_model=schemas.User, status_code=status.HTTP_200_OK)
 async def read_user(
     controller: Annotated[UserController, Depends()], user_id: int
 ) -> models.User:
-    return await controller.read_one(user_id=user_id)
+    user = await controller.read_one(user_id=user_id)
+    if not user:
+        raise UserNotFoundHTTPException()
+    return user
 
 
 @router.put("/{user_id}", response_model=schemas.User)
@@ -64,8 +70,4 @@ async def login_for_access_token(
     try:
         return await controller.authenticate()
     except IncorectLoginInfoException:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Incorrect username or password",
-            headers={"WWW-Authenticate": "Bearer"},
-        )
+        raise IncorectLoginInfoHTTPException()

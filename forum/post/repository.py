@@ -4,7 +4,6 @@ from fastapi import Depends
 from sqlalchemy import select
 
 from forum.base.database import AsyncSession, get_session
-from forum.base.exceptions import PostNotFoundException
 from forum.base.repository import RepositoryBase
 from forum.post import schemas
 from forum.post.models import Post
@@ -31,8 +30,6 @@ class PostDBRepository(RepositoryBase):
         statement = select(Post).filter(Post.id == item_id)
         response = await self.session.execute(statement)
         post = response.scalar_one_or_none()
-        if not post:
-            raise PostNotFoundException()
         return post
 
     async def update(self, item_id, item: schemas.PostUpdate) -> Post:

@@ -2,6 +2,8 @@ from typing import Annotated
 
 from fastapi import APIRouter, Depends
 
+from forum.base.exceptions import PostNotFoundException
+from forum.base.http_exceptions import PostNotFoundHTTPException
 from forum.post import models
 from forum.post.controllers import PostController
 from forum.user.dependencies import get_current_active_user
@@ -18,7 +20,10 @@ async def create_post_for_user(
     controller: Annotated[PostController, Depends()],
     post: schemas.PostCreate,
 ) -> models.Post:
-    return await controller.create(post=post, user=current_user)
+    try:
+        return await controller.create(post=post, user=current_user)
+    except PostNotFoundException:
+        raise PostNotFoundHTTPException()
 
 
 @router.get("/posts/", response_model=list[schemas.Post])
